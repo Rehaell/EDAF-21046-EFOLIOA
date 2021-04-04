@@ -43,7 +43,7 @@ public:
     CNode<T>* find(T, ostream&) const;
     CNode<T>* find_max(ostream&) const;
     void delete_pos(int, ostream&);
-    CLList<T>* invert_range(T, T, ostream&);
+    CNode<T>* invert_range(T, T, ostream&);
     
     //funcoes auxiliares
     bool isEmpty() const;
@@ -264,19 +264,20 @@ void CLList<T>::delete_pos(int pos, ostream& out) {
 }
 
 template<class T>
-CLList<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
+CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     
     if(isEmpty()) {
         out << "Comando invert_range: Lista vazia!\n";
-        return this;
+        return tail;
     } else if ((pos1 >= tamanho_lista || pos1 < 0) || (pos2 >= tamanho_lista || pos2 < 0) || pos1>pos2 ) {
         out << "Comando invert_range: Posicao invalida!\n";
-        return this;
+        return tail;
     } else if (pos1 == pos2)
-        return this;
+        return tail;
     
     CLList<T> circular_list_aux;
-    CNode<T> *head = tail->next;  
+    CNode<T> *head = tail->next;
+    
     int contador = 0;    
     
     do {
@@ -289,23 +290,22 @@ CLList<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     
     
     CNode<T> *head_aux = circular_list_aux.tail->next;
-    CNode<T> *tmp;
-    head = tail->next;
     
+
+    head = tail->next;   
     contador = 0;
-    circular_list_aux.print(out);
-    
-    while(head !=tail->next){
-        if(contador >= pos1 && contador <= pos2){
-            tmp = head;
-            head = head_aux;
-            head->next = tmp->next;
-            head_aux = head_aux->next;
+
+    do {
+        if(contador >= pos1 &&  contador <= pos2){
+            CNode<T> *tmp = head_aux;
+            head->element = tmp->element;
+            head_aux = tmp->next;
         }
         ++contador;
         head = head->next;
-    }
-    return this;   
+    } while(head != tail->next);
+    
+    return tail;
 }
 
 
@@ -325,7 +325,7 @@ int main() {
     
     while (getline(cin, input)){
         command = input.substr(0, input.find(" "));
-        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" || command=="invert_range"){
+        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" || command == "invert_range"){
             
             argumentos = input.substr(command.size()+1, string::npos);
             for( sregex_iterator i = sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex); i!= sregex_iterator(); ++i) {
@@ -340,9 +340,13 @@ int main() {
                 } else if (command == "find") {
                     circular_list.find(argumento,cout);
                 } else if (command == "invert_range") {
-                    circular_list.invert_range(1, 8, cout);
+                    smatch match_1 = *i++;
+                    smatch match_2 = *i;
+                    circular_list.invert_range(stoi(match_1.str()), stoi(match_2.str()), cout);
+                    break;
                 }
             }
+            
             
         } else if (command == "print") {
             circular_list.print(cout);       
@@ -360,7 +364,7 @@ int main() {
             circular_list.clear(cout);       
         } else if (command == "find_max") {
             circular_list.find_max(cout);       
-        } 
+        }
     }
     return 0;
 }
