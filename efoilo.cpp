@@ -295,6 +295,7 @@ int main() {
                     circular_list.find(stoi(match.str()),cout);
                 }
             }
+            
         } else if (command == "print") {
             circular_list.print(cout);       
         } else if (command == "print_0") {
