@@ -57,7 +57,6 @@ template<class T>
 CLList<T>::~CLList<T>(){
     if (!isEmpty()){
         CNode<T> *head = tail->next;
-        
         do {
             delete head;
             head = head->next;
@@ -67,10 +66,11 @@ CLList<T>::~CLList<T>(){
 
 template<class T> 
 CNode<T> *CLList<T>::insert_0(const T& el){
-    if(isEmpty()){
+    if(isEmpty()){ // se a lista está vazia, cria um novo nó e aponta-lhe tail
         tail = new CNode<T>(el);
         tail->next = tail;
-    } else {
+    } else { // caso contrário, cria um novo apontador com auxílio do constructor de nós
+             // atribuindo-lhe o valor de el e a apontar para o ex-primeiro elemento
         CNode<T> *tmp = new CNode<T>(el, tail->next);
         tail->next = tmp;
     }
@@ -83,9 +83,10 @@ CNode<T> *CLList<T>::insert_end(const T& el){
     if (isEmpty()){
         tail = new CNode<T>(el);
         tail->next = tail;
-    } else {
+    } else { //caso a lista nao esteja vazia, cria um novo nó com auxílio do constructor
+             //apontando-lhe o apontador do seguinte de tail
         tail->next = new CNode<T>(el, tail->next);
-        tail = tail->next;
+        tail = tail->next; //aponta tail para o novo nó criado que é apontado pelo seguinte de tail
     }
     tamanho_lista++;
     return tail;
@@ -96,7 +97,7 @@ ostream& CLList<T>::print_0(ostream& out) const {
     if(isEmpty()) 
         return out << "Comando print_0: Lista vazia!\n";
     
-    return out << "Lista(0)= " << tail->next->element << "\n";
+    return out << "Lista(0)= " << tail->next->element << "\n"; //imprime o nó seguinte a tail, o primeiro.
 }
 
 template<class T>
@@ -104,7 +105,7 @@ ostream& CLList<T>::print_end(ostream& out) const {
     if(isEmpty()) 
         return out << "Comando print_end: Lista vazia!\n";
     
-    return out << "Lista(end)= " << tail->element << "\n";
+    return out << "Lista(end)= " << tail->element << "\n"; //imprime o nó apontado por tail
 }
 
 template<class T>
@@ -116,10 +117,12 @@ ostream& CLList<T>::print(ostream& out) const {
     CNode<T> *tmp;
     tmp = tail->next;
     out << "Lista= ";
-    do {
+    do { //com auxílio de um apontador temporário, percorre a lista (iterando-a)
+         //e imprimindo os seus elementos
         out << tmp->element << " ";
-        tmp = tmp->next; 
-    } while(tmp != tail->next);
+        tmp = tmp->next; //aponta o apontador temporário para o nó seguinte (iterando a lista)
+    } while(tmp != tail->next); //caso o apontador temporário aponte para o primeiro elemento (o seguinte a tail) 
+                                // significa que atingiu o fim da lista.
     out << "\n";
     return out;
 }
@@ -132,10 +135,13 @@ void CLList<T>::delete_0(ostream& out){
         return;
     }
     
-    if(tail->next == tail) { // so tem um no
+    if(tail->next == tail) { //so tem um no, logo apaga o nó apontado por tail
+                             //apontando tail para nullptr
         delete tail;
         tail = nullptr;
-    } else  {
+    } else  { //caso contrário, com auxílio de um apontador temporário para salvaguardar
+              //o apontador seguinte ao do primeiro nó, apaga o nó seguinte a tail
+              //(o primeiro), e aponta tail para o nó temporário (que aponta para o ex-segundo nó)
         CNode<T> *tmp;
         tmp = tail->next->next;
         delete tail->next;
@@ -155,7 +161,10 @@ void CLList<T>::delete_end(ostream& out){
     if(tail->next == tail) { // so tem um no
         delete tail;
         tail = nullptr;
-    } else {
+    } else { //com auxílio de um apontador temporário de nome head, percorre a lista
+             //até o seguinte de head apontar para tail. Neste caso aponta o seguinte
+             //de head, para o seguinte de tail (o primeiro nó), e apaga o apontador
+             //tail, igualando-o depois ao apontador temporário head.
         CNode<T> *head = tail->next;
         while (head->next != tail) {
             head = head->next;
@@ -169,7 +178,7 @@ void CLList<T>::delete_end(ostream& out){
 
 template<class T>
 int CLList<T>::dim(ostream& out) const {
-    out << "Lista tem " << tamanho_lista << " itens\n";
+    out << "Lista tem " << tamanho_lista << " itens\n"; //retorna o valor da variavel tamanho_lista
     return tamanho_lista;
 }
 
@@ -181,7 +190,8 @@ void CLList<T>::clear(ostream& out) {
         return;
     }
     
-    do {
+    do { //percorre toda a lista apagando, a cada iteracção, o primeiro
+         //nó, quando tail apontar para nullptr significa que todos os elementos foram removidos
         delete_0(out);
     } while(tail != nullptr);   
 }
@@ -197,14 +207,16 @@ CNode<T>* CLList<T>::find(T el, ostream& out) const {
     CNode<T> *head = tail->next;
     int contador = 0;
     
-    do {
+    do { //percorre a lista, com auxílio de um apontador temporário head testando o seu
+         //elemento contra o elemento recebido como parâmetro, retornando o apontador head
         if(head->element == el) {
             out << "Item " << el << " na posicao " << contador << "\n";
             return head;
         }
         contador++;
-        head = head->next;
-    } while(head != tail->next);
+        head = head->next; //aponta head para o seu seguinte, de modo a iterar a lista
+    } while(head != tail->next); //caso head aponte para o seguinte de tail (primeiro nó da lista)
+                                 //significa que o valor de el não foi encontrado
     out << "Item " << el << " nao encontrado!\n";
     return nullptr;
 }
@@ -223,7 +235,10 @@ CNode<T>* CLList<T>::find_max(ostream& out) const {
     int contador = 0;
     int posicao = 0;
     
-    do {
+    do { //percorre a lista com auxílio do apontador temporário head, testando cada posição contra uma cópia de apontador tmp, 
+         //tmp contêm uma cópia do maior valor de head para uma dada posição
+         //como queremos a primeira posiçao onde o maior valo ocorre testamos apenas para > e não para >=
+         //De notar que se tmp->next for igual a nullptr, significa que ainda nenhum elemento para o maior valor foi guardado
         if((head->element > tmp->element) || (head->element == tmp->element && tmp->next == nullptr)) {
             tmp = head;
             posicao = contador;
@@ -259,7 +274,11 @@ void CLList<T>::delete_pos(int pos, ostream& out) {
     CNode<T> *head = tail;
     CNode<T> *tmp = tail;
     
-    for(int contador = 0; contador < tamanho_lista; ++contador){
+    for(int contador = 0; contador < tamanho_lista; ++contador){ 
+        //com auxílio de uma variavel contador, conta as iterações de head
+        //quando a variavel atinge o mesmo valor de pos, apaga essa posição
+        //com auxílio de uma apontador temporário que aponta para o nó seguinte
+        //de head
         if(pos == contador){
             head->next = tmp->next;
             delete tmp;
