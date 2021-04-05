@@ -297,9 +297,8 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
 
     do {
         if(contador >= pos1 &&  contador <= pos2){
-            CNode<T> *tmp = head_aux;
-            head->element = tmp->element;
-            head_aux = tmp->next;
+            head->element = head_aux->element;
+            head_aux = head_aux->next;
         }
         ++contador;
         head = head->next;
@@ -325,8 +324,7 @@ int main() {
     
     while (getline(cin, input)){
         command = input.substr(0, input.find(" "));
-        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" || command == "invert_range"){
-            
+        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" || command == "invert_range"){ 
             argumentos = input.substr(command.size()+1, string::npos);
             for( sregex_iterator i = sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex); i!= sregex_iterator(); ++i) {
                 smatch match = *i;
@@ -345,9 +343,7 @@ int main() {
                     circular_list.invert_range(stoi(match_1.str()), stoi(match_2.str()), cout);
                     break;
                 }
-            }
-            
-            
+            }            
         } else if (command == "print") {
             circular_list.print(cout);       
         } else if (command == "print_0") {
