@@ -247,7 +247,6 @@ void CLList<T>::delete_pos(int pos, ostream& out) {
         return;  
     } 
         
-        
     CNode<T> *head = tail;
     CNode<T> *tmp = tail;
     
@@ -269,7 +268,7 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     if(isEmpty()) {
         out << "Comando invert_range: Lista vazia!\n";
         return tail;
-    } else if ((pos1 >= tamanho_lista || pos1 < 0) || (pos2 >= tamanho_lista || pos2 < 0) || pos1>pos2 ) {
+    } else if ((pos1 >= tamanho_lista || pos1 < 0) || (pos2 >= tamanho_lista || pos2 < 0) || (pos1>pos2) ) {
         out << "Comando invert_range: Posicao invalida!\n";
         return tail;
     } else if (pos1 == pos2)
@@ -290,9 +289,8 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     
     
     CNode<T> *head_aux = circular_list_aux.tail->next;
+    head = tail->next;
     
-
-    head = tail->next;   
     contador = 0;
 
     do {
@@ -303,7 +301,6 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
         ++contador;
         head = head->next;
     } while(head != tail->next);
-    
     return tail;
 }
 
@@ -324,7 +321,7 @@ int main() {
     
     while (getline(cin, input)){
         command = input.substr(0, input.find(" "));
-        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" || command == "invert_range"){ 
+        if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" ){ 
             argumentos = input.substr(command.size()+1, string::npos);
             for( sregex_iterator i = sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex); i!= sregex_iterator(); ++i) {
                 smatch match = *i;
@@ -337,12 +334,7 @@ int main() {
                     circular_list.delete_pos(argumento,cout);
                 } else if (command == "find") {
                     circular_list.find(argumento,cout);
-                } else if (command == "invert_range") {
-                    smatch match_1 = *i++;
-                    smatch match_2 = *i;
-                    circular_list.invert_range(stoi(match_1.str()), stoi(match_2.str()), cout);
-                    break;
-                }
+                } 
             }            
         } else if (command == "print") {
             circular_list.print(cout);       
@@ -360,6 +352,15 @@ int main() {
             circular_list.clear(cout);       
         } else if (command == "find_max") {
             circular_list.find_max(cout);       
+        } else if (command == "invert_range") { //caso especial tem que ter apenas dois argumentos
+            argumentos = input.substr(command.size()+1, string::npos);
+            if (distance(sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex), sregex_iterator()) == 2) {
+                sregex_iterator i = sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex);
+                smatch match_1 = *i++;
+                smatch match_2 = *i;
+                circular_list.invert_range(stoi(match_1.str()), stoi(match_2.str()), cout);
+            }else
+                cout << "O commando invert_range tem que ter 2 argumentos\n";
         }
     }
     return 0;
