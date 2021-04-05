@@ -5,7 +5,7 @@
 
 using namespace std;
 
-
+//nó de lista circular
 template<class T>
 class CNode {
 public:
@@ -20,6 +20,7 @@ public:
     CNode<T> *next;
 };
 
+//lista circular
 template <class T>
 class CLList {
    int tamanho_lista;
@@ -54,8 +55,16 @@ protected:
 
 template<class T>
 CLList<T>::~CLList<T>(){
-       
+    if (!isEmpty()){
+        CNode<T> *head = tail->next;
+        
+        do {
+            delete head;
+            head = head->next;
+        } while(head != tail->next);
+    }     
 }
+
 template<class T> 
 CNode<T> *CLList<T>::insert_0(const T& el){
     if(isEmpty()){
