@@ -48,6 +48,11 @@ public:
     
     //funcoes auxiliares
     bool isEmpty() const;
+    void clear();
+    void delete_0();
+    void delete_end();
+
+
 
 protected:
     CNode<T> *tail;
@@ -55,13 +60,7 @@ protected:
 
 template<class T>
 CLList<T>::~CLList<T>(){
-    if (!isEmpty()){
-        CNode<T> *head = tail->next;
-        do {
-            delete head;
-            head = head->next;
-        } while(head != tail->next);
-    }     
+    clear();    
 }
 
 template<class T> 
@@ -261,10 +260,10 @@ void CLList<T>::delete_pos(int pos, ostream& out) {
     }
         
     if(pos == 0 ){ //quer apagar a posicao inicial
-        delete_0(out);
+        delete_0();
         return;
     } else if(pos == tamanho_lista-1) { //quer apagar posicao final
-        delete_end(out);
+        delete_end();
         return;
     } else if (pos > tamanho_lista-1) {
         out << "Comando delete_pos: Posicao invalida!\n";
@@ -307,7 +306,8 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     
     int contador = 0;    
     
-    do {
+    do { //com o auxílio de um apontador temporário head, percorre a lista entre o primeiro elemento e pos2
+         //adicionando os valores situados entre pos1 e pos2 a uma nova lista temporária por ordem inversa
         if(contador>=pos1 ){
             circular_list_aux.insert_0(head->element);
         }
@@ -321,7 +321,9 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
     
     contador = 0;
 
-    do {
+    do { //para cada nó situado entre pos1 e pos2 copia o valor do elemento da lista auxiliar
+         //para a lista principal, apontando o apontador temporário auxiliar head_aux para o elemento
+         //seguinte da lista auxiliar
         if(contador >= pos1 &&  contador <= pos2){
             head->element = head_aux->element;
             head_aux = head_aux->next;
@@ -329,6 +331,7 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
         ++contador;
         head = head->next;
     } while(head != tail->next);
+    circular_list_aux.clear();
     return tail;
 }
 
@@ -336,7 +339,59 @@ CNode<T>* CLList<T>::invert_range(T pos1, T pos2, ostream& out) {
 //definicao das funcoes auxiliares
 template<class T> 
 bool CLList<T>::isEmpty() const {
-    return tail==nullptr;
+    return tail==nullptr; //retorna o resultado do teste se o apontador tail aponta para nullptr.
+}
+
+//overload da funcao clear para apagar a lista sem escrever mensagens
+template<class T>
+void CLList<T>::clear(){
+    if(isEmpty()) {
+        return;
+    }
+    do { 
+        delete_0();
+    } while(tail != nullptr);  
+}
+
+//overload da funcao delete_0 para apagar a lista sem escrever mensagens
+template<class T>
+void CLList<T>::delete_0(){
+    if(isEmpty()) {
+        return;
+    }
+    
+    if(tail->next == tail) { 
+        delete tail;
+        tail = nullptr;
+    } else  { 
+        CNode<T> *tmp;
+        tmp = tail->next->next;
+        delete tail->next;
+        tail->next = tmp;
+    }
+    tamanho_lista--;
+}
+
+//overload da funcao delete_end para apagar a lista sem escrever mensagens
+template<class T>
+void CLList<T>::delete_end(){
+    if(isEmpty()) {
+        return;
+    }
+    
+    if(tail->next == tail) { 
+        delete tail;
+        tail = nullptr;
+    } else { 
+        CNode<T> *head = tail->next;
+        while (head->next != tail) {
+            head = head->next;
+        } 
+        head->next = tail->next;
+        delete tail;
+        tail = head;
+    }
+    tamanho_lista--;
 }
 
 int main() {
@@ -348,9 +403,16 @@ int main() {
     CLList<signed int> circular_list;
     
     while (getline(cin, input)){
+        //os comandos insert_0, insert_end, delete_pos, find têm argumentos, logo temos que proceder à extracção dos mesmos
+        //após extrairmos o respectivo comando da string input até ao primeiro caractere " "
         command = input.substr(0, input.find(" "));
         if (command == "insert_0" || command == "insert_end" || command == "delete_pos" || command == "find" ){ 
+            //extraímos os argumentos com auxílio novamente da função substr, mas desta vez com início na posição
+            //seguinte ao tamanho de command.size()+1 para ignorarmos o comando já extraído. De notar que iremos 
+            //separar todos os argumentos até ao fim da string de input.
             argumentos = input.substr(command.size()+1, string::npos);
+            //como os comandos podem ter mais que um argumento, percorremos todas as iterações as strings extraídas anteriormente
+            //convertendo-as em inteiros e chamando a respectiva função para um dado comando
             for( sregex_iterator i = sregex_iterator(argumentos.begin(), argumentos.end(), argumentos_regex); i!= sregex_iterator(); ++i) {
                 smatch match = *i;
                 argumento = stoi(match.str());
@@ -363,7 +425,8 @@ int main() {
                 } else if (command == "find") {
                     circular_list.find(argumento,cout);
                 } 
-            }            
+            }
+        //os comandos seguintes não necessitam de argumentos a serem extraídos com a excepção do ultímo comando invert_range
         } else if (command == "print") {
             circular_list.print(cout);       
         } else if (command == "print_0") {
